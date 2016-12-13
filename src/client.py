@@ -3,50 +3,18 @@ This module computes API requests.
 """
 import functools
 import os
+from datetime import datetime
+import time
+
 import json
 import requests
-import pandas as pd
 
-from datetime import datetime
 from multiprocessing import Pool
-from src.utils import flatten_dataframe, important_print
+from src.utils import important_print
+import src
 
 
-def etl_sncf(api_paths, user, page_limit=100, count=100, debug=False):
-    """
-    Take a list of paths to extract, and save all data in subfolder.
-    """
-    for requested_path in api_paths:
-        # Create Data directory if it doesn't exist
-        directory = os.path.join("Data", requested_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        # Compute request
-        request = Client(user, requested_path)
-        request._get_multiple_pages(
-            page_limit=page_limit, debug=debug, count=count)
-        print(request.total_result)
-        # Write request log
-        request.write_log(directory)
-        if not request.first_request_status:
-            # If first request failed, no parsing, go to next element
-            request.write_log(directory)
-            continue
-        # Parse results if sucessful
-        parser = RequestParser(request.results, requested_path)
-        parser.parse()
-        # Print some information
-        parser.explain()
-        # Write it on disk
-        parser.write_all(directory)
-
-# http://www.rueckstiess.net/research/snippets/show/ca1d7d90
-
-
-def unwrap_self_f(arg, **kwarg):
-    """ For multiprocessing
-    """
-    return Client._get_single_page(*arg, **kwarg)
+_RETRIABLE_STATUSES = set([500, 503, 504])
 
 
 class Client(object):
@@ -54,69 +22,126 @@ class Client(object):
     Performs requests to the navitia API web services.
     """
 
-    def __init__(self, user, path):
+    def __init__(self, user, retry_timeout=20):
         self.core_path = "https://api.sncf.com/v1/"
         self.user = user
-        self.path = os.path.join(self.core_path, path)
-        # Here are stored all requests results
+        self.retry_timeout = retry_timeout
+
+        self.path = None
+        # Result: [page, result]
         self.results = {}
         self.parsed_results = {}
         self.first_request_status = False
         self.total_result = False
+
         self.log = None
+
+        # For multiple pages requests
         self.count_per_page = None
         self.page_limit = None
-        important_print("Computing API request for " + self.path, 1)
 
-    def _get_single_page(self, page=0, debug=False, count=100):
-        if debug:
-            print("Import on page " + str(page))
+    def _get(self, url, extra_params=None, verbose=False, first_request_time=None, retry_counter=0):
+        if verbose and not first_request_time:
+            print("Import on url %s " % url)
+
+        if not first_request_time:
+            first_request_time = datetime.now()
+
+        elapsed = datetime.now() - first_request_time
+        if elapsed > self.retry_timeout:
+            raise src.exceptions.Timeout()
+
+        if retry_counter > 0:
+            # 0.5 * (1.5 ^ i) is an increased sleep time of 1.5x per iteration,
+            # starting at 0.5s when retry_counter=0. The first retry will occur
+            # at 1, so subtract that first.
+            delay_seconds = 0.5 * 1.5 ** (retry_counter - 1)
+            time.sleep(delay_seconds)
+
+        full_url = os.path.join(self.core_path, url)
+        try:
+            response = requests.get(
+                url=full_url, auth=(self.user, ""), params=(extra_params or {}))
+        except requests.exceptions.Timeout:
+            raise src.exceptions.Timeout()
+        except Exception as e:
+            raise src.exceptions.TransportError(e)
+        # Warn if not 200
+        if response.status_code != 200:
+            print("Warning: response status_code is %s" % response.status_code)
+
+        if response.status_code in _RETRIABLE_STATUSES:
+            # Retry request.
+            return self._get(url=url, extra_params=extra_params, first_request_time=first_request_time, retry_counter=retry_counter + 1, verbose=verbose)
+
+        # Return raw response object
+        return response
+
+    def _get_single_page_multiprocess(self, path, page, count, extra_params=None, extract_pagination=False, verbose=False):
+
+        if verbose:
+            print("Import on page %d " % page)
         # Pagination parameters of request
-        payload = {
+        pagination_params = {
             "start_page": page,
             "count": count,
         }
-        # Compute request
-        request_result = requests.get(
-            url=self.path, auth=(self.user, ""), params=payload)
-        # Save result
-        self.results[page] = request_result
-        # Save result success, and number of results, for first page.
-        if request_result.status_code == 200 and page == 0:
-            self.first_request_status = True
-            self.extract_nbr_results()
-        return (page, request_result)
+        parameters = {**pagination_params, **(extra_params or {})}
+        full_path = os.path.join(self.core_path, path)
+        response = requests.get(
+            url=full_path, auth=(self.user, ""), params=parameters)
 
-    def extract_nbr_results(self):
-        if not self.first_request_status:
-            print("Cannot extract, because no successful request.")
+        # Warn if not 200
+        if response.status_code != 200:
+            print("Warning: response status_code is %s" % response.status_code)
+
+        # Save result
+        self.results[page] = response
+
+        # Save result success, and number of results, for first page.
+        if extract_pagination:
+            if response.status_code != 200:
+                raise ValueError("Request failed for pagination")
+            else:
+                self.first_request_status = True
+                self._extract_nbr_results()
+        return (page, response)
+
+    def _extract_nbr_results(self):
         # Parse first request answer.
         parsed = json.loads(self.results[0].text)
         # Extract pagination part.
-        pagination = parsed["pagination"]
-        # Extract total_result
-        self.total_result = pagination["total_result"]
+        try:
+            pagination = parsed["pagination"]
+            self.total_result = pagination["total_result"]
+        except KeyError:
+            # No pagination in page
+            self.total_result = False
 
-    def _get_multiple_pages(self, page_limit=10, debug=False, count=100):
+    def _get_multiple_pages(self, path, page_limit=10, count=100, extra_params=None, verbose=False):
         # TODO manage failed requests
         # Compute first with 100 lines
         self.page_limit = page_limit
         self.count_per_page = count
-        self._get_single_page(0, debug=True, count=count)
-        if not self.total_result and not self.first_request_status:
-            print("Fail, cound not successfully compute first request.")
+        self._get_single_page_multiprocess(path=path, page=0, count=count,
+                                           verbose=True, extract_pagination=True)
+
         # Find number of requests to make
         blocs = self.total_result // count
         page_limit = min(page_limit, blocs + 1)
-        if debug:
+
+        if verbose:
             important_print("There are " + str(self.total_result) + " elements with " +
                             str(count) + " elements per page. Limit is " + str(page_limit) + ".")
         # Compute necessary queries
         # Here multiprocessing
         pages = range(1, page_limit)
         pool = Pool(processes=30)
-        list_tuples = pool.map(unwrap_self_f, zip(
-            [self] * len(pages), pages, [debug] * len(pages), [count] * len(pages)))
+        n = len(pages)
+        all_parameters = zip([self] * n, [path] * n,
+                             pages * n, [count] * n, [extra_params or {}] * n)
+
+        list_tuples = pool.map(unwrap_self_f, all_parameters)
         pool.close()
         pool.join()
 
@@ -146,6 +171,13 @@ class Client(object):
             json.dump(self.log, f, ensure_ascii=False)
 
 
+# http://www.rueckstiess.net/research/snippets/show/ca1d7d90
+def unwrap_self_f(arg, **kwarg):
+    """ For multiprocessing
+    """
+    return Client._get_single_page_multiprocess(*arg, **kwarg)
+
+
 def make_api_method(func):
     """
     Provides a single entry point for modifying all API methods.
@@ -156,144 +188,6 @@ def make_api_method(func):
         return result
     return wrapper
 
+from src.journeys import journeys
 
-class RequestParser:
-
-    def __init__(self, request_results, asked_path):
-        self.asked_path = asked_path
-        self.results = request_results
-        self.item_name = os.path.basename(asked_path)
-        self.parsed = {}  # dictionary of page : dictionary
-        self.parsing_errors = {}
-        self.nested_items = None  # will be a dict
-        self.unnested_items = None  # will be a dict
-        self.links = []  # first page is enough
-        self.disruptions = {}  # all pages
-        self.keys = []  # collect keys found in request answer
-        self.nbr_expected_items = None
-        self.nbr_collected_items = None
-        self.log = None
-
-    def set_results(self, request_results):
-        self.results = request_results
-
-    def parse(self):
-        self.parse_requests()
-        self.extract_keys()
-        self.extract_links()
-        self.extract_disruptions()
-        self.get_nested_items()
-        self.get_unnested_items()
-        self.extract_nbr_expected_items()
-        self.count_nbr_collected_items()
-        self.parse_log()
-
-    def parse_requests(self):
-        # First operation, to parse requests text into python dictionnaries
-        for page, value in self.results.items():
-            # Only add if answer was good
-            if value.status_code == 200:
-                try:
-                    self.parsed[page] = json.loads(value.text)
-                except ValueError:
-                    print("JSON decoding error.")
-                    self.parsing_errors[page] = "JSON decoding error"
-
-    def get_nested_items(self):
-        """
-        Result is a dictionary, of one key: item_name, and value is list of items (concatenate all result pages).
-        """
-        dictionnary = {self.item_name: []}
-        for page, value in self.parsed.items():
-            # concatenate two lists of items
-            dictionnary[self.item_name] += value[self.item_name]
-        self.nested_items = dictionnary
-
-    def get_nested_disruptions(self):
-        """
-        Result is a dictionary, of one key: item_name, and value is list of items (concatenate all result pages).
-        """
-        if self.item_name == "disruptions":
-            return False
-
-        dictionnary = {"disruptions": []}
-        for page, value in self.parsed.items():
-            # concatenate two lists of items
-            dictionnary["disruptions"] += value["disruptions"]
-        self.disruptions = dictionnary
-
-    def get_unnested_items(self):
-        df = pd.DataFrame(self.nested_items[self.item_name])
-        flatten_dataframe(df, drop=True, max_depth=5)
-        self.unnested_items = df.to_dict()
-
-    def extract_keys(self):
-        # Extract keys of first page
-        self.keys = list(self.parsed[0].keys())
-
-    def extract_links(self):
-        # Extract from first page
-        try:
-            self.links = self.parsed[0]["links"]
-        except KeyError:
-            self.links = {"links": "Not found"}
-
-    def extract_disruptions(self):
-        # TODO extract all pages
-        # Extract from first page
-        try:
-            self.disruptions = self.parsed[0]["disruptions"]
-        except KeyError:
-            self.disruptions = {"disruptions": "Not found"}
-
-    def extract_nbr_expected_items(self):
-        if self.results[0].status_code != 200:
-            return None
-        # Parse first request answer.
-        parsed = json.loads(self.results[0].text)
-        # Extract pagination part.
-        pagination = parsed["pagination"]
-        # Extract total_result
-        self.nbr_expected_items = pagination["total_result"]
-
-    def count_nbr_collected_items(self):
-        unnested = pd.DataFrame(self.unnested_items)  # df
-        self.nbr_collected_items = len(unnested.index)
-
-    def explain(self):
-        print("Parsing:")
-        print("Keys found: " + str(self.keys))
-        print(self.item_name.capitalize() + " has " +
-              str(self.nbr_expected_items) + " elements.")
-
-    def parse_log(self):
-        log = {}
-        log["number_requests"] = len(self.results)
-        log["number_parsed"] = len(self.parsed)
-        log["keys"] = self.keys
-        log["nbr_announced_items"] = self.nbr_expected_items
-        log["nbr_collected_items"] = self.nbr_collected_items
-        log["item_columns"] = list(pd.DataFrame(
-            self.unnested_items).columns.values)
-        self.log = log
-        log["parsing_errors"] = self.parsing_errors
-
-    def write_all(self, directory):
-        # Get results
-        unnested = pd.DataFrame(self.unnested_items)  # df
-        nested = self.nested_items  # dict
-        # Write item csv
-        unnested.to_csv(os.path.join(directory, self.item_name + ".csv"))
-        # Write item json
-        with open(os.path.join(directory, self.item_name + ".json"), 'w') as f:
-            json.dump(nested, f, ensure_ascii=False)
-        # Write links (of first page)
-        with open(os.path.join(directory, "links.json"), 'w') as f:
-            json.dump(self.links, f, ensure_ascii=False)
-        # Write disruptions (if item different)
-        if self.item_name != "disruptions":
-            unnested_dis = pd.DataFrame(self.disruptions)  # df
-            unnested_dis.to_csv(os.path.join(directory, "disruptions.csv"))
-        # Write logs
-        with open(os.path.join(directory, "parse_log.json"), 'w') as f:
-            json.dump(self.log, f, ensure_ascii=False)
+Client.journeys = make_api_method(journeys)

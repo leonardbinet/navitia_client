@@ -1,4 +1,13 @@
-# NAVITIA PYTHON WRAPPER
+# Python Client for Navitia Services
+
+## NAVITIA OVERVIEW
+navitia.io is the open API for building cool stuff with mobility data. It provides the following services
+
+- journeys computation
+- line schedules
+- next departures
+- exploration of public transport data / search places
+- and sexy things such as isochrones
 
 
 ## GOAL
