@@ -49,7 +49,13 @@ def route_schedules(client, raw=None, line=None, route=None, trip=None, stop_poi
     url_begin = "coverage/sncf/"
     url_end = "route_schedules"
 
-    # Maximum one, out of: trip_id, stop_point, route, line, raw
+    # Maximum one, out of: trip, stop_point, route, line, raw
+    # Minimum one
+    arg_count = sum(1 for x in [raw, trip, stop_point, route, line] if x)
+    if arg_count != 1:
+        raise ValueError(
+            "Needs at least, and at most one argument among raw, trip, stop_point, route, line.")
+
     if raw:
         # /coverage/sncf/routes/route:OCE:1-TrainTER-87471003-87474007/route_schedules
         # raw = "routes/route:OCE:1-TrainTER-87471003-87474007/"

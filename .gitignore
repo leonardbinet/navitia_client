@@ -23,3 +23,9 @@ Data/*
 # Python package
 *.egg-info/
 dist/*
+
+
+# Modules in root directory
+main.py
+configuration.py
+other.py
