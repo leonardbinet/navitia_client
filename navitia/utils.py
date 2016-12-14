@@ -5,8 +5,6 @@ For now:
  - flatten_columns
  - flatten_dataframe
 """
-import pandas as pd
-import numpy as np
 
 
 def important_print(message, level=0):
@@ -58,9 +56,6 @@ def check_asked_cols(df_to_check, cols_to_check):
     real_columns = df_to_check.columns
     for column in cols_to_check:
         if column not in real_columns:
-            if debug:
-                print("Column " + column +
-                      " is not a real column in the dataframe.")
             cols_to_check.remove(column)
     return cols_to_check
 

@@ -19,3 +19,7 @@ Data/*
 
 # PDF: documentation API
 *.pdf
+
+# Python package
+*.egg-info/
+dist/*

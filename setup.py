@@ -5,10 +5,10 @@ except ImportError:
 
 
 setup(
-    name='navitia-python',
-    packages=['navitia-python'],  # this must be the same as the name above
+    name='navitia',
+    packages=['navitia'],  # this must be the same as the name above
     version='0.1',
-    description='Navitia client for python',
+    description='(unofficial) navitia client for python',
     author='Leonard Binet',
     author_email='leonardbinet@gmail.com',
     url='https://github.com/leonardbinet/navitia-python',

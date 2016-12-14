@@ -1,7 +1,7 @@
 import os
 import json
 import pandas as pd
-from src.utils import flatten_dataframe, important_print
+from navitia.utils import flatten_dataframe, important_print
 
 
 class Parser:

@@ -15,8 +15,8 @@ Most useful with:
 - vehicle_journeys
 """
 
-from src.client import Client
-from src.utils import important_print
+from navitia.client import Client
+from navitia.utils import important_print
 from multiprocessing import Pool
 from datetime import datetime
 
