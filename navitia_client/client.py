@@ -10,9 +10,8 @@ import json
 import requests
 
 from multiprocessing import Pool
-from navitia.utils import important_print
-import navitia
-
+from navitia_client.utils import important_print
+import navitia_client
 
 _RETRIABLE_STATUSES = set([500, 503, 504])
 
@@ -40,7 +39,7 @@ class Client(object):
 
         elapsed = datetime.now() - first_request_time
         if elapsed > timedelta(seconds=self.retry_timeout):
-            raise navitia.exceptions.Timeout()
+            raise navitia_client.exceptions.Timeout()
 
         if retry_counter > 0:
             # 0.5 * (1.5 ^ i) is an increased sleep time of 1.5x per iteration,
@@ -57,12 +56,12 @@ class Client(object):
 
         except requests.exceptions.Timeout:
             if not ignore_fail:
-                raise navitia.exceptions.Timeout()
+                raise navitia_client.exceptions.Timeout()
             else:
                 return False
         except Exception as e:
             if not ignore_fail:
-                raise navitia.exceptions.TransportError(e)
+                raise navitia_client.exceptions.TransportError(e)
             else:
                 return False
 
@@ -121,10 +120,10 @@ def make_api_method(func):
         return result
     return wrapper
 
-from navitia.journeys import journeys
-from navitia.route_schedules import route_schedules
-from navitia.multipage import multipage
-from navitia.raw import raw
+from navitia_client.journeys import journeys
+from navitia_client.route_schedules import route_schedules
+from navitia_client.multipage import multipage
+from navitia_client.raw import raw
 
 Client.journeys = make_api_method(journeys)
 Client.route_schedules = make_api_method(route_schedules)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from navitia.client import Client
+from navitia_client.client import Client
 from configuration import USER
 
 # All main requests (missing some)
