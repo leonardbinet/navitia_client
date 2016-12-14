@@ -29,3 +29,6 @@ dist/*
 main.py
 configuration.py
 other.py
+
+# Personal reminder
+reminder.md

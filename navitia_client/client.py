@@ -29,7 +29,7 @@ class Client(object):
         self.user = user
         self.password = password
         self.retry_timeout = retry_timeout
-        self.last_url = None
+        self.requested_urls = []
 
     def _get(self, url, extra_params=None, verbose=False, first_request_time=None, retry_counter=0, ignore_fail=False):
         if verbose and not first_request_time:
@@ -54,6 +54,7 @@ class Client(object):
         try:
             response = requests.get(
                 url=full_url, auth=(self.user, self.password), params=(extra_params or {}))
+            self.requested_urls.append(response.url)
 
         except requests.exceptions.Timeout:
             if not ignore_fail:
