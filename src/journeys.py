@@ -1,10 +1,30 @@
-"""Performs requests to the Google Maps Directions API."""
+"""Performs requests to the Navitia journeys API.
+http://doc.navitia.io/#journeys
+
+Two accesses:
+/coverage/{region_id}/journeys 	List of journeys on a specific coverage
+/coverage/{a_path_to_resource}/journeys
+
+Focus on first access:
+# from/to parameters
+##coordonates: lon;lat
+- coverage/sncf/journeys?from=2.3749036;48.8467927&to=2.2922926;48.8583736&
+- coverage/sncf/journeys?from=2.3749036%3B48.8467927&to=2.2922926%3B48.8583736&
+##ressources id:
+- coverage/sncf/journeys?from=stop_point:OCE:SP:CorailIntercit%C3%A9-87113001
+- coverage/sncf/journeys?from=stop_area:OCE:SA:87171009
+# datetime parameter:
+&datetime=20161221T000000
+"""
 
 
-def journeys(client, origin=None, destination=None, datetime=None, datetime_represents=None, data_freshness=None):
+def journeys(client, origin=None, destination=None, datetime=None, datetime_represents=None, data_freshness=None, verbose=False):
     """
     from:
-    # The id of the departure of your journey. If none are provided an isochrone is computed
+    # The id of the departure of your journey. If none are provided an isochrone is computed, can be:
+        - a ressource id:
+        - coordonates, lon;lat:
+
 
     to:
     # The id of the arrival of your journey. If none are provided an isochrone is computed
@@ -56,4 +76,4 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
         raise ValueError(
             "Data freshness if specified must be 'realtime' or 'base_schedule'")
 
-    return client._get(path="coverage/sncf/journeys", extra_params=params)
+    return client._get(url="coverage/sncf/journeys", extra_params=params, verbose=verbose)

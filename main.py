@@ -1,8 +1,6 @@
 #!/usr/bin/python3
-import os
 
 from src.client import Client
-from src.parser import Parser
 from configuration import USER
 
 # All main requests (missing some)
@@ -34,43 +32,18 @@ api_paths_list = [
 ]
 
 
-def etl_sncf(api_paths, user, page_limit=100, count=100, debug=False):
-    """
-    Take a list of paths to extract, and save all data in subfolder.
-    """
-    for requested_path in api_paths:
-        # Create Data directory if it doesn't exist
-        directory = os.path.join("Data", requested_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        # Compute request
-        request = Client(user)
-        request._get_multiple_pages(
-            page_limit=page_limit, count=count, path=requested_path, verbose=True)
-        print(request.total_result)
-        # Write request log
-        request.write_log(directory)
-        if not request.first_request_status:
-            # If first request failed, no parsing, go to next element
-            request.write_log(directory)
-            continue
-        # Parse results if sucessful
-        parser = Parser(request.results, requested_path)
-        parser.parse()
-        # Print some information
-        parser.explain()
-        # Write it on disk
-        parser.write_all(directory)
-
 coords = [48.846905, 2.377097]
-etl_sncf(['coverage/sncf/disruptions'], user=USER,
-         page_limit=10, count=50, debug=True)
+coords = '2.377097;48.846905'
+raw_url = 'coverage/sncf/stop_points/stop_point:OCE:SP:CorailIntercit%C3%A9-87116137/places_nearby'
+stop_area = 'stop_area:OCE:SA:87171009'
+stop_point = "stop_point:OCE:SP:CorailIntercité-87113001"
+isodate = '20161221T000000'
 
-from_area = 'stop_area:SNF:SA:PARISMONT'
-to_area = 'stop_area:SNF:SA:NANTES'
-from_area = 'stop_area:OCE:SA:87171009'
+client = Client(USER)
+response1 = client.journeys(origin=stop_area, verbose=True)
+response2 = client.route_schedules(stop_point=stop_point, verbose=True)
+response3 = client.raw(url=raw_url)
 
-
-client = Client(USER, "coverage/sncf/journeys")
-#client._get_single_page(extra_params={"from": from_area})
-# client.journeys(origin=from_area)
+url = 'coverage/sncf/disruptions'
+multi_response = client.multipage(
+    page_limit=10, url=url, verbose=True)
