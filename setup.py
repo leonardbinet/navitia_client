@@ -11,6 +11,7 @@ setup(
     description='(unofficial) navitia client for python',
     author='Leonard Binet',
     author_email='leonardbinet@gmail.com',
+    license='MIT',
     url='https://github.com/leonardbinet/navitia-python',
     classifiers=[],
 )

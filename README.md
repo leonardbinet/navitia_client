@@ -13,6 +13,12 @@ navitia.io is the open API for building cool stuff with mobility data. It provid
 ## GOAL
 The goal of this package is to provide a dead simple way to request navitia's API.
 
+## INSTALLATION
+To install package:
+```
+pip install navitia_client
+```
+
 ## USAGE
 You first have to ask for an API key (for instance SNCF). Suppose you have it.
 
