@@ -17,8 +17,10 @@ Focus on first access:
 &datetime=20161221T000000
 """
 
+import os
 
-def journeys(client, origin=None, destination=None, datetime=None, datetime_represents=None, data_freshness=None, verbose=False):
+
+def journeys(client, origin=None, destination=None, datetime=None, datetime_represents=None, data_freshness=None, region=None, verbose=False):
     """
     from:
     # The id of the departure of your journey. If none are provided an isochrone is computed, can be:
@@ -46,9 +48,30 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
 
     """
 
-    # checks if good format for from and to
+    # First choose region
+    if not region and not client.region:
+        raise ValueError(
+            "You must specifiy region, either here or in client")
 
+    elif region:
+        if isinstance(region, str):
+            # region argument overrides client specified region
+            used_region = region
+        else:
+            raise ValueError("Region must be a string")
+
+    elif not region and client.region:
+        # Takes already specified region
+        used_region = client.region
+
+    else:
+        # shouldn't be possible
+        raise ValueError("Weird error, caused by region")
+
+    # checks if good format for 'from' and 'to'
     params = {}
+
+    url = os.path.join("coverage", used_region, "journeys")
 
     if not origin and not destination:
         raise ValueError("Must specify at least origin or destination")
@@ -76,4 +99,4 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
         raise ValueError(
             "Data freshness if specified must be 'realtime' or 'base_schedule'")
 
-    return client._get(url="coverage/sncf/journeys", extra_params=params, verbose=verbose)
+    return client._get(url=url, extra_params=params, verbose=verbose)

@@ -30,15 +30,24 @@ raw_url = 'coverage/sncf/stop_points/stop_point:OCE:SP:CorailIntercit%C3%A9-8711
 stop_area = 'stop_area:OCE:SA:87171009'
 stop_point = "stop_point:OCE:SP:CorailIntercité-87113001"
 
-response1 = client.journeys(origin=from_area)
+# Get all journeys from a given point or ressource:
+response1 = client.journeys(origin=stop_area)
+
+# Get route_schedules for given stop point:
 response2 = client.route_schedules(stop_point=stop_point)
+
+# Compute a custom request (raw_url, and extra_params):
 response3 = client.raw(url=raw_url)
+
 ```
 ## METHODS
+
+http://doc.navitia.io/#api-catalog
+
 Client class has multiple methods:
 - Client.raw() : when you want to choose freely url and parameters, and still benefit from core functionalities
-- Client.mulipage() : parallelized requests for multi-pages ressources.
-- Client.journey() : computes journeys
+- Client.multipage() : parallelized requests for multi-pages ressources.
+- Client.journeys() : computes journeys
 - Client.route_schedules() : computes route_schedules
 
 And many more to come:

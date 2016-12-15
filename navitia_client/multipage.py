@@ -95,5 +95,6 @@ def multipage(client, url, page_limit=10, count=100, extra_params=None, verbose=
         log["page_limit"] = page_limit
         log["nbr_results"] = nbr_results
         responses["log"] = log
-
+    if verbose:
+        print("Multipage finished")
     return responses

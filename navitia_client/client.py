@@ -31,6 +31,11 @@ class Client(object):
         self.retry_timeout = retry_timeout
         self.requested_urls = []
 
+    def set_region(self, region):
+        if not isinstance(region, str):
+            raise ValueError("Region must be a string")
+        self.region = region
+
     def _get(self, url, extra_params=None, verbose=False, first_request_time=None, retry_counter=0, ignore_fail=False):
         if verbose and not first_request_time:
             print("Import on url %s " % url)
@@ -93,8 +98,11 @@ class Client(object):
         parameters = {**pagination_params, **(extra_params or {})}
         # Ignore fail: if one request fails, we still want others to be
         # computed
+        # Verbose for first page only
+        if page != 0:
+            verbose = False
         response = self._get(
-            url=url, extra_params=parameters, ignore_fail=True)
+            url=url, extra_params=parameters, ignore_fail=True, verbose=verbose)
 
         return (page, response)
 
@@ -126,8 +134,13 @@ from navitia_client.journeys import journeys
 from navitia_client.route_schedules import route_schedules
 from navitia_client.multipage import multipage
 from navitia_client.raw import raw
+from navitia_client.inverted_geocoding import inverted_geocoding
+from navitia_client.explore import explore
+
 
 Client.journeys = make_api_method(journeys)
 Client.route_schedules = make_api_method(route_schedules)
 Client.multipage = make_api_method(multipage)
 Client.raw = make_api_method(raw)
+Client.inverted_geocoding = make_api_method(inverted_geocoding)
+Client.explore = make_api_method(explore)

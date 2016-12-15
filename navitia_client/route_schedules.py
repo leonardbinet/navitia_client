@@ -24,7 +24,7 @@ coverage/sncf/lines/line:OCE:SN-87775866-87775007/route_schedules
 import os
 
 
-def route_schedules(client, raw=None, line=None, route=None, trip=None, stop_point=None, from_datetime=None, duration=None, items_per_schedule=None, data_freshness=None, disable_geojson=None, verbose=False):
+def route_schedules(client, raw=None, line=None, route=None, trip=None, stop_point=None, from_datetime=None, duration=None, items_per_schedule=None, data_freshness=None, disable_geojson=None, region=None, verbose=False):
     """
     from_datetime: iso-date-time
     # The date_time from which you want the schedules
@@ -46,7 +46,23 @@ def route_schedules(client, raw=None, line=None, route=None, trip=None, stop_poi
     """
     params = {}
 
-    url_begin = "coverage/sncf/"
+    # Region selection
+    if not region and not client.region:
+        raise ValueError(
+            "You must specifiy region, either here or in client")
+    elif region:
+        if isinstance(region, str):
+            # region argument overrides client specified region
+            used_region = region
+        else:
+            raise ValueError("Region must be a string")
+    elif not region and client.region:
+        used_region = client.region
+    else:
+        # shouldn't be possible
+        raise ValueError("Weird error, caused by region")
+
+    url_begin = os.path.join("coverage", used_region)
     url_end = "route_schedules"
 
     # Maximum one, out of: trip, stop_point, route, line, raw
