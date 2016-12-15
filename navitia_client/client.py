@@ -21,15 +21,14 @@ class Client(object):
     Performs requests to the navitia API web services.
     """
 
-    def __init__(self, user, password="", retry_timeout=20, core_url='sncf'):
-        if core_url == 'sncf':
-            self.core_url = "https://api.sncf.com/v1/"
-        else:
-            self.core_url = core_url
+    def __init__(self, user, password="", retry_timeout=20, core_url='https://api.sncf.com/v1/', region=None):
+        self.core_url = core_url
         self.user = user
         self.password = password
         self.retry_timeout = retry_timeout
         self.requested_urls = []
+        if region:
+            self.region = region
 
     def set_region(self, region):
         if not isinstance(region, str):

@@ -33,7 +33,7 @@ def inverted_geocoding(client, coords=None, lat=None, lon=None, pois=None, dista
     # Else: coverage/{region_id}/coords/{lon;lat}
     else:
         if region == True:
-            if not client.region:
+            if not hasattr(client, 'region'):
                 raise ValueError(
                     "You must specifiy region, either here or in client")
             else:

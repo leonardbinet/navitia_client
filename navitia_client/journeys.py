@@ -49,7 +49,7 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
     """
 
     # First choose region
-    if not region and not client.region:
+    if not region and not hasattr(client, 'region'):
         raise ValueError(
             "You must specifiy region, either here or in client")
 
@@ -60,7 +60,7 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
         else:
             raise ValueError("Region must be a string")
 
-    elif not region and client.region:
+    elif not region and hasattr(client, 'region'):
         # Takes already specified region
         used_region = client.region
 

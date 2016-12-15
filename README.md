@@ -64,11 +64,13 @@ And many more to come:
 - verbose=True parameter if you want to get information in console about requests.
 - client.requested_urls attribute if you want to see all urls requested by your client.
 
-## CLEAN REPO:
+## TODO
+
+### CLEAN REPO:
 - unit tests
 - code documentation with sphynx
 
-## ADD METHODS
+### ADD METHODS
 
 All api points: http://doc.navitia.io/#api-catalog :
 
