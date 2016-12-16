@@ -14,29 +14,15 @@ url                                                 Result
 
 Focus on first two usages (coord service doesn't work for sncf)
 
+Either coords, or region
+
 """
 import os
 
 
-def explore(client, collection_name, region=None, extra_params=None, verbose=False):
+def explore(client, collection_name, coords=None, region=None, depth=None, distance=None, disable_geojson=None, extra_params=None, verbose=False):
 
-    # First choose region
-    if not region and not hasattr(client, 'region'):
-        raise ValueError(
-            "You must specifiy region, either here or in client")
-    elif region:
-        if isinstance(region, str):
-            # region argument overrides client specified region
-            used_region = region
-        else:
-            raise ValueError("Region must be a string")
-    elif not region and hasattr(client, 'region'):
-        # Takes already specified region
-        used_region = client.region
-    else:
-        # shouldn't be possible
-        raise ValueError("Weird error, caused by region")
-
+    # Check accepted_collections
     accepted_collections = {
         "networks",
         "lines",
@@ -53,10 +39,59 @@ def explore(client, collection_name, region=None, extra_params=None, verbose=Fal
         raise ValueError("Collection name provided is not supported.")
 
     # Construct url
-    # /coverage/{region_id}/{collection_name}
-    url = os.path.join("coverage", used_region, collection_name)
+    if coords and region:
+        raise ValueError(
+            "Cannot specifiy both coords and region, you must choose one.")
+    if coords:
+        # TODO: check coords format
+        # /coverage/{lon;lat}/{collection_name}
+        url = os.path.join("coverage", coords, collection_name)
+    else:
+        # First choose region
+        if not region and not hasattr(client, 'region'):
+            raise ValueError(
+                "You must specifiy coords or region, either here or in client")
+        elif region:
+            if isinstance(region, str):
+                # region argument overrides client specified region
+                used_region = region
+            else:
+                raise ValueError("Region must be a string")
+        elif not region and hasattr(client, 'region'):
+            # Takes already specified region
+            used_region = client.region
+        else:
+            # shouldn't be possible
+            raise ValueError("Weird error, caused by region")
+        # /coverage/{region_id}/{collection_name}
+        url = os.path.join("coverage", used_region, collection_name)
 
-    # Parameters TODO
-    # depth, odt level, distance, headsign,since / until,disable_geojson,Filter
+    # PARAMETERS
+    # OK: depth, distance, disable_geojson
+    # Not taken into account because too specific: odt level, headsign, since
+    # / until
+    # They can still be taken into account in extra_params argument
+    params = {}
 
-    return client._get(url=url, extra_params=extra_params, verbose=verbose)
+    if depth:
+        try:
+            depth = int(depth)
+            params["depth"] = depth
+        except ValueError:
+            raise ValueError("Depth must be int")
+
+    if distance:
+        if not coords:
+            raise ValueError("Distance works only with coords")
+        try:
+            distance = int(distance)
+            params["distance"] = distance
+        except ValueError:
+            raise ValueError("Distance must be int")
+
+    if disable_geojson:
+        params["disable_geojson"] = True
+
+    all_params = {**params, **(extra_params or {})}
+
+    return client._get(url=url, extra_params=all_params, verbose=verbose)

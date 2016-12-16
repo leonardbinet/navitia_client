@@ -12,7 +12,7 @@ class InvertedGeocodingTest(_test.TestCase):
 
     def setUp(self):
         self.user = 'leo'
-        self.core_url = "https://api.sncf.com/v1/"
+        self.core_url = "https://api.navitia.io/v1/"
         self.client = navitia_client.Client(self.user)
         self.lat = '48.866667'
         self.lon = '2.333333'
@@ -34,7 +34,7 @@ class InvertedGeocodingTest(_test.TestCase):
     def test_coords_request(self):
         # Without region: should work: coords/{lon;lat}
         client = self.client
-        url1 = "https://api.sncf.com/v1/coords/2.333333;48.866667"
+        url1 = "https://api.navitia.io/v1/coords/2.333333;48.866667"
         responses.add(responses.GET, url1,
                       body='yo',
                       status=200, content_type='application/json')
@@ -44,7 +44,7 @@ class InvertedGeocodingTest(_test.TestCase):
 
         # With region: should work: coverage/{region_id}/coords/{lon;lat}
         client.set_region("sncf")
-        url2 = "https://api.sncf.com/v1/coverage/sncf/coords/2.333333;48.866667"
+        url2 = "https://api.navitia.io/v1/coverage/sncf/coords/2.333333;48.866667"
         responses.add(responses.GET, url2,
                       body='yo',
                       status=200, content_type='application/json')
@@ -56,7 +56,7 @@ class InvertedGeocodingTest(_test.TestCase):
     def test_lat_lon_request(self):
         # Without region: should work: coords/{lon;lat}
         client = self.client
-        url1 = "https://api.sncf.com/v1/coords/2.333333;48.866667"
+        url1 = "https://api.navitia.io/v1/coords/2.333333;48.866667"
         responses.add(responses.GET, url1,
                       body='yo',
                       status=200, content_type='application/json')
@@ -66,7 +66,7 @@ class InvertedGeocodingTest(_test.TestCase):
 
         # With region: should work: coverage/{region_id}/coords/{lon;lat}
         client.set_region("sncf")
-        url2 = "https://api.sncf.com/v1/coverage/sncf/coords/2.333333;48.866667"
+        url2 = "https://api.navitia.io/v1/coverage/sncf/coords/2.333333;48.866667"
         responses.add(responses.GET, url2,
                       body='yo',
                       status=200, content_type='application/json')

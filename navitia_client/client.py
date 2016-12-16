@@ -21,7 +21,7 @@ class Client(object):
     Performs requests to the navitia API web services.
     """
 
-    def __init__(self, user, password="", retry_timeout=20, core_url='https://api.sncf.com/v1/', region=None):
+    def __init__(self, user, password="", retry_timeout=20, core_url='https://api.navitia.io/v1/', region=None):
         self.core_url = core_url
         self.user = user
         self.password = password
