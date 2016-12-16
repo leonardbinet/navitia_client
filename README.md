@@ -21,7 +21,7 @@ pip install navitia_client
 ```
 
 ## USAGE
-You first have to ask for an API key (for instance SNCF). Suppose you have it.
+You first have to ask for an API key, for Navitia API, you can get it [here](https://www.navitia.io/register/). Suppose you have it:
 
 ```
 from navitia_client import Client
