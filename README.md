@@ -41,14 +41,18 @@ response2 = client.route_schedules(stop_point=stop_point, verbose=True)
 raw_url = 'coverage/fr-idf/stop_areas/stop_area:OIF:SA:8768138/places_nearby'
 response3 = client.raw(url=raw_url, verbose=True)
 
+# Compute custom multi-pages request:
+url = 'coverage/fr-idf/lines'
+response4 = client.raw(url, multipage=True, page_limit=10, verbose=True)
+
 # Compute invert geocoding request:
 lat = '48.866667'
 lon = '2.333333'
-response4 = client.inverted_geocoding(lat=lat, lon=lon, verbose=True)
+response5 = client.inverted_geocoding(lat=lat, lon=lon, verbose=True)
 
-# Compute multi-pages request:
-url = 'coverage/fr-idf/lines'
-multi_response = client.multipage(page_limit=10, url=url, verbose=True)
+# Compute explore ressource request, single or multipage:
+response6 = client.explore("networks", verbose=True)
+response7 = client.explore("lines", multipage=True, page_limit=5, count_per_page=50, verbose=True)
 ```
 ## METHODS
 
