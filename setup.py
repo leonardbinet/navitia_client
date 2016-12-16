@@ -6,9 +6,9 @@ except ImportError:
 
 setup(
     name='navitia_client',
-    packages=['navitia_client'],  # this must be the same as the name above
-    version='0.2.2',
-    description='(unofficial) navitia client for python',
+    packages=['navitia_client'],
+    version='0.3',
+    description='Navitia client for python',
     author='Leonard Binet',
     author_email='leonardbinet@gmail.com',
     license='MIT',
