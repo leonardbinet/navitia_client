@@ -212,10 +212,11 @@ from navitia_client.route_schedules import route_schedules
 from navitia_client.raw import raw
 from navitia_client.inverted_geocoding import inverted_geocoding
 from navitia_client.explore import explore
-
+from navitia_client.departures import departures
 
 Client.journeys = make_api_method(journeys)
 Client.route_schedules = make_api_method(route_schedules)
 Client.raw = make_api_method(raw)
 Client.inverted_geocoding = make_api_method(inverted_geocoding)
 Client.explore = make_api_method(explore)
+Client.departures = make_api_method(departures)

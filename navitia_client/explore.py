@@ -20,7 +20,10 @@ Either coords, or region
 import os
 
 
-def explore(client, collection_name, coords=None, region=None, depth=None, distance=None, disable_geojson=None, extra_params=None, multipage=None, count_per_page=None, page_limit=None, verbose=False):
+def explore(client, collection_name, coords=None, region=None, depth=None, distance=None, disable_geojson=None, extra_params=None, specific_object=None, multipage=None, count_per_page=None, page_limit=None, url_suffix=None, verbose=False):
+
+    if specific_object and multipage:
+        raise UserWarning("Specific objects return usually one page.")
 
     # Check accepted_collections
     accepted_collections = {
@@ -66,7 +69,14 @@ def explore(client, collection_name, coords=None, region=None, depth=None, dista
         # /coverage/{region_id}/{collection_name}
         url = os.path.join("coverage", used_region, collection_name)
 
-    # PARAMETERS
+    # Specific object
+    if specific_object:
+        url = os.path.join(url, specific_object)
+
+    # Url suffix
+    if url_suffix:
+        url = os.path.join(url, url_suffix)
+    # FILTERS
     # OK: depth, distance, disable_geojson
     # Not taken into account because too specific: odt level, headsign, since
     # / until
