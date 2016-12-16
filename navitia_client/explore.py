@@ -20,7 +20,7 @@ Either coords, or region
 import os
 
 
-def explore(client, collection_name, coords=None, region=None, depth=None, distance=None, disable_geojson=None, extra_params=None, verbose=False):
+def explore(client, collection_name, coords=None, region=None, depth=None, distance=None, disable_geojson=None, extra_params=None, multipage=None, count_per_page=None, page_limit=None, verbose=False):
 
     # Check accepted_collections
     accepted_collections = {
@@ -94,4 +94,8 @@ def explore(client, collection_name, coords=None, region=None, depth=None, dista
 
     all_params = {**params, **(extra_params or {})}
 
-    return client._get(url=url, extra_params=all_params, verbose=verbose)
+    if not multipage:
+        return client._get(url=url, extra_params=all_params, verbose=verbose)
+
+    else:
+        return client.multipage(url=url, page_limit=page_limit, count=count_per_page, extra_params=all_params, verbose=verbose)

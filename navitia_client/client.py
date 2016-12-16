@@ -118,6 +118,84 @@ class Client(object):
             print("WARNING: not able to extract pagination out of first request.")
             return False
 
+    def _get_multipage(self, url, page_limit=10, count=100, extra_params=None, verbose=False, log=False):
+        """
+        url: str
+        #
+
+        page_limit: int
+        #
+
+        count: int
+        #
+
+        extra_params: dict
+        #
+
+        verbose: boolean
+        #
+
+        log: boolean
+        #
+
+        ############
+        return: dict
+            key: page number
+            value: response object
+        """
+        responses = {}
+
+        # First page
+        page, response = self._get_single_page_multiprocess(
+            url=url, page=0, count=count, verbose=verbose, extra_params=extra_params)
+        responses[page] = response
+
+        # Find number of requests to make
+        nbr_results = self._extract_nbr_results(responses[0])
+        if not nbr_results:
+            # If unable to get pagination count, returns first response
+            return responses
+
+        # Find number of pages to query
+        blocs = nbr_results // count
+        page_limit = min(page_limit, blocs + 1)
+        if verbose:
+            important_print("There are %d elements with %d elements per page. Limit is %d." % (
+                nbr_results, count, page_limit))
+
+        # Query other pages, multiprocessing
+        pages = range(1, page_limit)
+        pool = Pool(processes=30)
+        n = len(pages)
+        all_parameters = zip([self] * n, [url] * n,
+                             pages, [count] * n, [extra_params or {}] * n, [verbose] * n)
+
+        list_tuples = pool.map(unwrap_self, all_parameters)
+        pool.close()
+        pool.join()
+        # Add results to initial results (first page)
+        responses.update(dict(list_tuples).items())
+
+        # Save logs
+        if log:
+            log = {}
+            log["date"] = str(datetime.now().isoformat())
+            log["url"] = url
+            log["count_per_page"] = count
+            log["page_limit"] = page_limit
+            log["nbr_results"] = nbr_results
+            responses["log"] = log
+        if verbose:
+            print("Multipage finished")
+        return responses
+
+
+def unwrap_self(arg, **kwarg):
+    """ To unwrap self in multiprocessing mode
+    http://www.rueckstiess.net/research/snippets/show/ca1d7d90
+    """
+    return Client._get_single_page_multiprocess(*arg, **kwarg)
+
 
 def make_api_method(func):
     """
@@ -131,7 +209,6 @@ def make_api_method(func):
 
 from navitia_client.journeys import journeys
 from navitia_client.route_schedules import route_schedules
-from navitia_client.multipage import multipage
 from navitia_client.raw import raw
 from navitia_client.inverted_geocoding import inverted_geocoding
 from navitia_client.explore import explore
@@ -139,7 +216,6 @@ from navitia_client.explore import explore
 
 Client.journeys = make_api_method(journeys)
 Client.route_schedules = make_api_method(route_schedules)
-Client.multipage = make_api_method(multipage)
 Client.raw = make_api_method(raw)
 Client.inverted_geocoding = make_api_method(inverted_geocoding)
 Client.explore = make_api_method(explore)

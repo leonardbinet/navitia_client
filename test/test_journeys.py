@@ -12,7 +12,7 @@ class JourneysTest(_test.TestCase):
 
     def setUp(self):
         self.user = 'leo'
-        self.core_url = "https://api.sncf.com/v1/"
+        self.core_url = "https://api.navitia.io/v1/"
         self.client = navitia_client.Client(self.user)
         self.lat = '48.866667'
         self.lon = '2.333333'
