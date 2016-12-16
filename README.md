@@ -59,10 +59,11 @@ response7 = client.explore("lines", multipage=True, page_limit=5, count_per_page
 http://doc.navitia.io/#api-catalog
 
 Client class has multiple methods:
-- Client.raw() : when you want to choose freely url and parameters, and still benefit from core functionalities
-- Client.multipage() : parallelized requests for multi-pages ressources.
+- Client.raw() : when you want to choose freely url and parameters, and still benefit from core functionalities, for instance multipage
 - Client.journeys() : computes journeys
 - Client.route_schedules() : computes route_schedules
+- Client.explore() : explore transportation objects as lines, routes, networks etc
+- Client.inverted_geocoding() : get address from coordinates.
 
 And many more to come:
 - isochrones

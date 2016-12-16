@@ -98,4 +98,4 @@ def explore(client, collection_name, coords=None, region=None, depth=None, dista
         return client._get(url=url, extra_params=all_params, verbose=verbose)
 
     else:
-        return client.multipage(url=url, page_limit=page_limit, count=count_per_page, extra_params=all_params, verbose=verbose)
+        return client._get_multipage(url=url, page_limit=page_limit, count=count_per_page, extra_params=all_params, verbose=verbose)
