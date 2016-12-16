@@ -63,7 +63,7 @@ Client class has multiple methods:
 - Client.journeys() : computes journeys
 - Client.route_schedules() : computes route_schedules
 - Client.explore() : explore transportation objects as lines, routes, networks etc
-- Client.inverted_geocoding() : get address from coordinates.
+- Client.inverted_geocoding() : get address from coordinates
 
 And many more to come:
 - isochrones
@@ -85,18 +85,18 @@ And many more to come:
 
 All api points: http://doc.navitia.io/#api-catalog :
 
-- Coverage - ok
-- Datasets - ok
-- Contributors - ok
-- Inverted geocoding - ok
-- Public Transportation Objects exploration - ok
-- Autocomplete on Public Transport objects - todo
-- Autocomplete on geographical objects - todo
-- Places Nearby - todo
-- Journeys - to finish
-- Isochrones (currently in Beta) - todo
-- Route Schedules - to finish
-- Stop Schedules - todo
-- Departures - todo
-- Arrivals - todo
-- Traffic reports - todo
+- Coverage - OK (raw)
+- Datasets - OK (raw)
+- Contributors - OK (raw)
+- Inverted geocoding - OK (tests to finish, and parameters check)
+- Public Transportation Objects exploration - OK
+- Autocomplete on Public Transport objects - TODO
+- Autocomplete on geographical objects - TODO
+- Places Nearby - TODO
+- Journeys - WORK IN PROGRESS
+- Isochrones (currently in Beta) - TODO
+- Route Schedules - WORK IN PROGRESS
+- Stop Schedules - TODO
+- Departures - TODO
+- Arrivals - TODO
+- Traffic reports - TODO
