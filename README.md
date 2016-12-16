@@ -53,6 +53,11 @@ response5 = client.inverted_geocoding(lat=lat, lon=lon, verbose=True)
 # Compute explore ressource request, single or multipage:
 response6 = client.explore("networks", verbose=True)
 response7 = client.explore("lines", multipage=True, page_limit=5, count_per_page=50, verbose=True)
+
+# Compute departures request:
+response8 = client.departures(coords=coords, verbose=True)
+response9 = client.departures(
+    collection_name="stop_points", object_id=stop_point, verbose=True)
 ```
 ## METHODS
 
@@ -64,10 +69,10 @@ Client class has multiple methods:
 - Client.route_schedules() : computes route_schedules
 - Client.explore() : explore transportation objects as lines, routes, networks etc
 - Client.inverted_geocoding() : get address from coordinates
+- Client.departures() : get departures from coords or object.
 
 And many more to come:
 - isochrones
-- departures
 - arrivals
 - many others...
 
@@ -97,6 +102,6 @@ All api points: http://doc.navitia.io/#api-catalog :
 - Isochrones (currently in Beta) - TODO
 - Route Schedules - WORK IN PROGRESS
 - Stop Schedules - TODO
-- Departures - TODO
+- Departures - WORK IN PROGRESS (tests, check parameters)
 - Arrivals - TODO
 - Traffic reports - TODO
