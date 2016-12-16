@@ -25,24 +25,30 @@ You first have to ask for an API key (for instance SNCF). Suppose you have it.
 
 ```
 from navitia_client import Client
-client = Client(user=USER, core_url='https://api.sncf.com/v1/')
-client.set_region("sncf")
+
+client = Client(user=NAVITIA_USER)
+client.set_region("fr-idf")
 
 # Get all journeys from a given point or ressource:
-stop_area = 'stop_area:OCE:SA:87171009'
-response1 = client.journeys(origin=stop_area)
+stop_area = "stop_area:OIF:SA:8768138"
+response1 = client.journeys(origin=stop_area, verbose=True)
 
 # Get route_schedules for given stop point:
-stop_point = "stop_point:OCE:SP:CorailIntercité-87113001"
-response2 = client.route_schedules(stop_point=stop_point)
+stop_point = "stop_point:OIF:SP:10:1145"
+response2 = client.route_schedules(stop_point=stop_point, verbose=True)
 
 # Compute a custom request (raw_url, and extra_params):
-raw_url = 'coverage/sncf/stop_points/stop_point:OCE:SP:CorailIntercit%C3%A9-87116137/places_nearby'
-response3 = client.raw(url=raw_url)
+raw_url = 'coverage/fr-idf/stop_areas/stop_area:OIF:SA:8768138/places_nearby'
+response3 = client.raw(url=raw_url, verbose=True)
+
+# Compute invert geocoding request:
+lat = '48.866667'
+lon = '2.333333'
+response4 = client.inverted_geocoding(lat=lat, lon=lon, verbose=True)
 
 # Compute multi-pages request:
-url = 'coverage/sncf/disruptions'
-multi_response = client.multipage(page_limit=10, url=url)
+url = 'coverage/fr-idf/lines'
+multi_response = client.multipage(page_limit=10, url=url, verbose=True)
 ```
 ## METHODS
 
