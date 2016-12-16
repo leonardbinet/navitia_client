@@ -74,7 +74,8 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
     url = os.path.join("coverage", used_region, "journeys")
 
     if not origin and not destination:
-        raise ValueError("Must specify at least origin or destination")
+        raise UserWarning(
+            "Must specify at least origin or destination, or else it will return an isochrone")
 
     if origin:
         params["from"] = origin
@@ -86,6 +87,10 @@ def journeys(client, origin=None, destination=None, datetime=None, datetime_repr
 
     if datetime:
         params["datetime"] = datetime
+
+    if not datetime and datetime_represents:
+        raise ValueError(
+            "You need to specify datetime when datetime_represents is used.")
 
     if datetime_represents in [None, "departure", "arrival"]:
         params["datetime_represents"] = datetime_represents

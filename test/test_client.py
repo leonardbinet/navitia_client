@@ -22,12 +22,14 @@ class ClientTest(_test.TestCase):
         self.client = navitia_client.Client(self.user)
 
     @responses.activate
-    def test_something(self):
+    def test_simple_request(self):
         responses.add(responses.GET,
                       "https://api.sncf.com/v1/coverage/sncf/disruptions",
                       body='yeah',
                       status=200,
                       content_type="application/json")
 
-        self.client.raw("random_url")
+        self.client.raw("coverage/sncf/disruptions")
         self.assertEqual(1, len(responses.calls))
+
+    # could test retriable status, and parameters

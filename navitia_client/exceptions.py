@@ -47,4 +47,4 @@ class Timeout(Exception):
 
 class _RetriableRequest(Exception):
     """Signifies that the request can be retried."""
-pass
+    pass
