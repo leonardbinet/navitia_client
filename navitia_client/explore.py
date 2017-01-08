@@ -102,7 +102,13 @@ def explore(client, collection_name, coords=None, region=None, depth=None, dista
     if disable_geojson:
         params["disable_geojson"] = True
 
-    all_params = {**params, **(extra_params or {})}
+    all_params = {}
+
+    for key, value in params.items():
+        all_params[key] = value
+
+    for key, value in extra_params.items():
+        all_params[key] = value
 
     if not multipage:
         return client._get(url=url, extra_params=all_params, verbose=verbose)

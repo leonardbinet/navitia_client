@@ -94,7 +94,13 @@ class Client(object):
             "start_page": page,
             "count": count,
         }
-        parameters = {**pagination_params, **(extra_params or {})}
+        parameters = {}
+        for key, value in pagination_params.items():
+            parameters[key] = value
+
+        for key, value in extra_params.items():
+            parameters[key] = value
+
         # Ignore fail: if one request fails, we still want others to be
         # computed
         # Verbose for first page only
