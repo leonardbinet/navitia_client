@@ -7,7 +7,7 @@ except ImportError:
 setup(
     name='navitia_client',
     packages=['navitia_client'],
-    version='0.4',
+    version='0.5',
     description='Navitia client for python',
     author='Leonard Binet',
     author_email='leonardbinet@gmail.com',

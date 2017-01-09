@@ -104,11 +104,17 @@ def explore(client, collection_name, coords=None, region=None, depth=None, dista
 
     all_params = {}
 
-    for key, value in params.items():
-        all_params[key] = value
+    try:
+        for key, value in params.items():
+            all_params[key] = value
+    except:
+        pass
 
-    for key, value in extra_params.items():
-        all_params[key] = value
+    try:
+        for key, value in extra_params.items():
+            all_params[key] = value
+    except:
+        pass
 
     if not multipage:
         return client._get(url=url, extra_params=all_params, verbose=verbose)

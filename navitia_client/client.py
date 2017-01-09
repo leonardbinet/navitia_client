@@ -94,12 +94,13 @@ class Client(object):
             "start_page": page,
             "count": count,
         }
-        parameters = {}
-        for key, value in pagination_params.items():
-            parameters[key] = value
-
-        for key, value in extra_params.items():
-            parameters[key] = value
+        parameters = pagination_params
+        try:
+            for key, value in extra_params.items():
+                parameters[key] = value
+        except:
+            # no extra param
+            pass
 
         # Ignore fail: if one request fails, we still want others to be
         # computed
