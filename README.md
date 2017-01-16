@@ -81,6 +81,7 @@ And many more to come:
 - client.requested_urls attribute if you want to see all urls requested by your client.
 
 ## TODO
+- replace multiprocessing by gevent async requests
 
 ### CLEAN REPO:
 - unit tests

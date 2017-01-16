@@ -1,6 +1,9 @@
 """
 This module computes API requests.
 """
+from gevent import monkey
+monkey.patch_all()
+
 import functools
 import os
 from datetime import datetime, timedelta
@@ -9,7 +12,7 @@ import time
 import json
 import requests
 
-from multiprocessing import Pool
+from gevent.pool import Pool
 from navitia_client.utils import important_print
 import navitia_client
 
@@ -172,13 +175,12 @@ class Client(object):
 
         # Query other pages, multiprocessing
         pages = range(1, page_limit)
-        pool = Pool(processes=30)
+        pool = Pool(30)
         n = len(pages)
         all_parameters = zip([self] * n, [url] * n,
                              pages, [count] * n, [extra_params or {}] * n, [verbose] * n)
 
         list_tuples = pool.map(unwrap_self, all_parameters)
-        pool.close()
         pool.join()
         # Add results to initial results (first page)
         responses.update(dict(list_tuples).items())
